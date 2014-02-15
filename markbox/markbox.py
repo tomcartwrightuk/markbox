@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os
 import markdown
 import cherrypy
+import time
 from zlib import crc32
 from pyatom import AtomFeed
 from jinja2 import Environment, FileSystemLoader
@@ -39,7 +40,7 @@ def reading_time(text):
 def get_markdown():
     return markdown.Markdown(extensions=[
         "meta", "extra", "codehilite", "headerid(level=2)",
-        "sane_lists", "smartypants"
+        "sane_lists", "smartypants", "footnotes"
     ])
 
 
@@ -138,13 +139,14 @@ class Markbox(object):
                 page_title=mdown.Meta["title"][0],
                 date=parsedate(mdown.Meta["date"][0]),
                 prev_post=prev_post,
-                next_post=next_post)
+                next_post=next_post,
+                todays_year=time.strftime("%Y"))
 
     @cherrypy.expose
     @cache.cached(lambda a: "index", ["listing"])
     @dropbox.connected
     def index(self, *args, **kwargs):
-        tpl_list = self.tpl.get_template("list.html")
+        tpl_list = self.tpl.get_template("home.html")
         return tpl_list.render(posts=self.listing())
 
     def run(self, host="0.0.0.0", port=8080, production=False):
@@ -179,6 +181,7 @@ class Markbox(object):
                 posts.append({
                     "path": f["path"][:-3],  # no extension, keep slash
                     "title": mdown.Meta["title"][0],  # wrapped in a list
+                    "abstract": mdown.Meta["abstract"][0],  # wrapped in a list
                     "date": parsedate(mdown.Meta["date"][0]),
                     "html": html
                 })

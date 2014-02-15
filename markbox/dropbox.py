@@ -32,8 +32,7 @@ class Dropbox(object):
         if s_token and s_secret:
             sess.set_token(s_token, s_secret)
         elif "oauth_token" in query:  # callback from Dropbox
-            s_token = sess.obtain_access_token(dropbox.session.OAuthToken(
-                self.cache.get("r_token"), self.cache.get("r_token_secret")))
+            s_token = sess.obtain_access_token(dropbox.session.OAuthToken(self.cache.get("r_token"), self.cache.get("r_token_secret")))
             self.cache.set("s_token", s_token.key)
             self.cache.set("s_secret", s_token.secret)
             with open(".s_token", "w") as f:
